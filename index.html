@@ -18,16 +18,38 @@
     <div class="float-left col clearfix">
         <div style='width:80px;line-height:38px;' class="align-middle float-left">是否禁用：</div>
         <div class="float-left" style='width:calc(100% - 80px)'>
-            <select  class="form-control" id="exampleFormControlSelect2">
-                <option>是</option>
-                <option>否</option>
+            <select  class="form-control" id="exampleFormControlSelect2" >
+                <option value="-1">请选择</option>
+                <option value="1">否</option>
+                <option value="0">是</option>
             </select>
         </div>
     </div>
     <div class="col-2">
-        <button type="button" class="btn btn-primary">查询</button>
+        <button type="button" class="btn btn-primary" id="seach">查询</button>
     </div>
 
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
+                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker2"/>
+                    <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker2').datetimepicker({
+                    locale: 'zh-cn'
+                });
+            });
+        </script>
+    </div>
 </div>
 <div class="box-content ">
     <div class="border-top-0 border">
@@ -40,25 +62,7 @@
                     <th scope="col">操作</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>启用</td>
-                </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>禁用</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>Larry</td>
-                    <td>the Bird</td>
-                    <td>启用</td>
-                </tr>
+            <tbody id="t-body">
             </tbody>
         </table>
     </div>
@@ -67,5 +71,45 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <script src="./js/bootstrap.min.js" ></script>
+<script src="./js/jquery.min.js" ></script>
+<script>
+    let tbody = $('#t-body');
+    $(function () {
+        getList();
+    })
+    function getList (body) {
+        $('#t-body').empty();
+        $.ajax({
+            url:"http://localhost:3000/getList",
+            data:body,
+            method:'get',
+            dataType: 'json',
+            success: (res) => {
+                if (res.status === 1) {
+                    res.data.forEach(item => {
+                        const tbodyinnerHTML = `
+                            <tr>
+                                <th scope="row">${item.id}</th>
+                                <td>${new Date(parseInt(item.createtime)).toLocaleString().replace(/:\\d{1,2}$/, ' ')}</td>
+                                <td>${item.status === 1 ? '启用' : '禁用'}</td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-primary">${item.status === 0 ? '启用' : '禁用'}</button>
+                                    <button type="button" class="btn btn-outline-info">预览</button>
+                                    <button type="button" class="btn btn-outline-success">下载</button></td>
+                            </tr>
+`
+                        tbody.append(tbodyinnerHTML);
+                    })
+                }
+            }
+        })
+    }
+    $('#seach').click(() => {
+        const body = {
+            status: $('select  option:selected').val() === '-1' ? "" : $('select  option:selected').val()
+        }
+        getList(body)
+    })
+</script>
 </body>
 </html>
